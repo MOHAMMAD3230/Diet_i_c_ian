@@ -11,7 +11,7 @@ app.use(express.static("."));
 app.post("/chat", async (req, res) => {
   const userMessage = req.body.message;
   try {
-    const apiRes = await fetch("https://api.openai.com/v1/chat/completions", {
+    const apiRes = await fetch("open-ai21.p.rapidapi.com", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
