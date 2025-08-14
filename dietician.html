@@ -14,9 +14,9 @@ label { margin-top: 10px; }
 input, select, button { padding: 10px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc; }
 button { background-color: #28a745; color: white; cursor: pointer; margin-top: 15px; }
 button:hover { background-color: #218838; }
-#nutritionOutput { margin-top: 20px; padding: 15px; background: #f1f1f1; border-radius: 10px; }
 #printBtn { display:none; background:#007bff; }
 #printBtn:hover { background:#0056b3; }
+#nutritionOutput { margin-top: 20px; padding: 15px; background: #f1f1f1; border-radius: 10px; }
 #suggestions { position: relative; }
 .suggestion-list { position: absolute; top: 100%; left: 0; right: 0; background: white;
   border: 1px solid #ccc; border-top: none; max-height: 250px; overflow-y: auto; z-index: 1000; }
@@ -69,9 +69,12 @@ const foodDatabase = {
   "egg": { "category": "Meat", "calories": 155, "protein": 13, "fiber": 0, "allergens": ["egg"] }
 };
 
+// Base64 logo (small placeholder)
+const base64Logo = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAAAyCAYAAAB5nVbLAAAAAXNSR0IArs4c6QAAAlZJREFUeF7tmM1xwkAMhe/1FswYUzpA9nXQWwRbQi97lfI5m7TSN1AJqaSGIxVOadFdxXKwAA5K0MSHdgEQBAEBAAgBAYAL1V75olkM3Cm1vdOP1PvdUsr7Zv4Fz75oxCSaBYNUSCFkhRKkkgSt9Jqu4FhQQlSHghmSLxwPN2FYKTFAt3WKAKShVGJMOo+pVXyiA3N2xy5PA2NVLYsER3uVm2bOMAASYEMiGHYDKw4SkUkAWUg0GZ7RQ9XhZpCWeEw0BQtYADN6V9ZnZdQ2K33nKJ2CEp7GoGVQ5YY52jJtMKwpwC9JCDJkipM4OE3YkVQVDJNN1F5jOY/14NzGipHMR7GLUCphcQAFZqXnioEvwhxGDb1VNCjOIA2YZmx3SmptblWt7idYYHq39PpWbJ6bmSnXo6nEEHTnGuXv3Bx0+3cqSC6R5DshY+pw+MKyMUNuPv0rQsWZ+SXU44f2ZoZU4c7j9f1ML5sCmTyJ+2eu3M8zRK6xyFeaS847vLjN0rST69lQ+4zVxgA6zWE2Cj5gKGq/CaMLI+Myg6PUtQ4hPno24GSP5+MZfVIkitMFHDjoai5V5QqYLXiBJ/O++KoWq+rUmRonphU1AgDL9q5UU1zRGMef4MIwzRHNYdyQNIhuoUTotCesMwBEg/HQ6b5apKhAzIn/XdSYNuf3DIMBSv6AGUiZuKl+yR9sOAAAAAElFTkSuQmCC";
+
 let allFoodNames = Object.keys(foodDatabase);
 let currentFocus = -1;
-let categoryState = {}; // remembers collapse state
+let categoryState = {};
 
 const foodInput = document.getElementById("foodName");
 const suggestionsBox = document.getElementById("suggestions");
@@ -130,7 +133,6 @@ foodInput.addEventListener("input", function () {
       list.appendChild(header);
       list.appendChild(itemContainer);
     }
-
     suggestionsBox.appendChild(list);
   }
 });
@@ -143,12 +145,8 @@ foodInput.addEventListener("keydown", function (e) {
   else if (e.key === "Enter") { e.preventDefault(); if (currentFocus > -1) items[currentFocus].click(); }
 });
 
-function highlight(items) {
-  removeActive(items);
-  if (currentFocus >= items.length) currentFocus = 0;
-  if (currentFocus < 0) currentFocus = items.length - 1;
-  items[currentFocus].classList.add("active");
-}
+function highlight(items) { removeActive(items); if (currentFocus >= items.length) currentFocus = 0;
+  if (currentFocus < 0) currentFocus = items.length - 1; items[currentFocus].classList.add("active"); }
 function removeActive(items) { items.forEach(i => i.classList.remove("active")); }
 document.addEventListener("click", e => { if (e.target !== foodInput) suggestionsBox.innerHTML = ""; });
 
@@ -184,11 +182,19 @@ document.getElementById("foodInputForm").onsubmit = function (e) {
 function capitalize(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
 
 function downloadReport() {
-  const reportContent = document.getElementById("nutritionOutput").innerHTML;
+  const today = new Date().toLocaleDateString();
+  const reportContent = `
+    <div style="text-align:center; margin-bottom:20px;">
+      <img src="${base64Logo}" alt="Logo" style="max-height:50px;"><br>
+      <h2>Dietician Bot - Nutrition Report</h2>
+      <p><em>Date: ${today}</em></p>
+    </div>
+    ${document.getElementById("nutritionOutput").innerHTML}
+  `;
   const newWindow = window.open("", "_blank");
   newWindow.document.write(`<html><head><title>Nutrition Report</title></head><body>${reportContent}</body></html>`);
   newWindow.document.close();
-  newWindow.print(); // lets user choose PDF in print dialog
+  newWindow.print();
 }
 </script>
 </body>
