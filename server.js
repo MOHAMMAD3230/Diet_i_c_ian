@@ -15,7 +15,7 @@ app.post("/chat", async (req, res) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+        "Authorization": `Bearer ${process.env.30cbe4bc30msh5fdcf92c4fd37b1p1c022fjsncc0f1842bb0a}`
       },
       body: JSON.stringify({
         model: "gpt-3.5-turbo",
