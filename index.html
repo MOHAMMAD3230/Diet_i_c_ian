@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dietician Bot - Offline</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div class="container">
+    <h1>Dietician Bot - Offline</h1>
+    <form id="foodInputForm" autocomplete="off">
+      <label for="categories">Category:</label>
+      <select id="categories">
+        <option>Fruits</option>
+        <option>Vegetables</option>
+        <option>Grains</option>
+        <option>Dairy</option>
+        <option>Meat</option>
+        <option>Snacks</option>
+      </select>
+
+      <label for="foodName">Food Name:</label>
+      <input type="text" id="foodName" placeholder="Type to search..." required/>
+      <div id="suggestions"></div>
+
+      <label for="allergy">Allergens (comma separated):</label>
+      <input type="text" id="allergy" placeholder="e.g. nuts, dairy"/>
+
+      <button type="submit">Get Nutrition Info</button>
+    </form>
+
+    <div id="nutritionOutput"></div>
+  </div>
+  <script src="main.js"></script>
+</body>
+</html>
