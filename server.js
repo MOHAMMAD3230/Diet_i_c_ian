@@ -42,3 +42,14 @@ app.post("/chat", async (req, res) => {
 });
 
 app.listen(3000, () => console.log("Server running on http://localhost:3000"));
+
+
+
+POST /conversationgpt35 HTTP/1.1
+X-Rapidapi-Key: 30cbe4bc30msh5fdcf92c4fd37b1p1c022fjsncc0f1842bb0a
+X-Rapidapi-Host: open-ai32.p.rapidapi.com
+Content-Type: application/json
+Host: open-ai32.p.rapidapi.com
+Content-Length: 67
+
+{"messages":[{"role":"user","content":"hello"}],"web_access":false}
