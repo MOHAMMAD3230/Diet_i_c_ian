@@ -17,7 +17,7 @@ app.post('/api/nutrition', async (req, res) => {
   try {
     const response = await axios.get('https://api.nal.usda.gov/fdc/v1/foods/search', {
       params: {
-        api_key: evbkpkYjm9qBAe6gXrcAgIhhFechn8Tj3Yd4AuIp,
+        api_key: USDA_API_KEY,
         query: foodName,
         pageSize: 1
       }
