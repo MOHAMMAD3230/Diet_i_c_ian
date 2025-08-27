@@ -1,232 +1,295 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Advanced USDA Dietician Chatbot</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Advanced Dietician App with Live Connected Dots Background</title>
 <style>
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
-    margin: 0; padding: 20px;
-    display: flex; justify-content:center; align-items:center; height:100vh;
+  html, body {
+    margin: 0; padding: 0;
+    width: 100%; height: 100vh;
+    font-family: Arial, sans-serif;
+    background: #121212;
     color: white;
+    overflow: hidden;
   }
-  #chatbot {
-    width: 480px; height: 90vh;
-    border-radius: 15px; background:#176127;
-    box-shadow: 0 20px 30px rgba(0,0,0,.6);
-    display: flex; flex-direction: column;
+  canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: -1;
+    display: block;
   }
-  #chat {
-    flex:1; padding:20px; overflow-y:auto;
-    background:#2e7d32; border-radius:15px 15px 0 0;
-    font-size:16px; line-height:1.4;
+  #appPanel {
+    position: relative;
+    max-width: 800px;
+    margin: 40px auto;
+    background: rgba(20, 20, 20, 0.9);
+    border-radius: 16px;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.25);
+    padding: 30px 40px;
+    z-index: 10;
   }
-  .msg {
-    margin: 10px 0; max-width: 75%;
-    padding: 10px 15px; border-radius: 20px;
-    word-wrap: break-word;
-  }
-  .bot {
-    background:#81c784; color:#176127; align-self: flex-start;
-  }
-  .user {
-    background:#46a049; color:#eaf9ea; align-self: flex-end;
-  }
-  #inputs {
-    padding: 15px 20px; background:#176127;
-    display: flex; flex-wrap: wrap; gap: 10px;
-    border-radius: 0 0 15px 15px;
-  }
-  #inputs > div {
-    flex: 1 1 100px; display: flex; flex-direction: column;
+  #appPanel h1 {
+    color: #00fff7;
+    margin-top: 0;
+    text-align: center;
+    font-weight: bold;
   }
   label {
-    font-size: 14px; margin-bottom:4px; color:#c6dfc6;
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
   }
-  input[type="number"], input[type="text"] {
-    padding: 6px 10px; border-radius: 8px; border:none;
-    font-size: 14px;
+  input, textarea, button {
+    width: 100%;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    border-radius: 8px;
+    background-color: #222;
+    border: 1px solid #333;
+    color: white;
+    font-size: 1em;
+    outline: none;
   }
-  #buttons {
-    display: flex; gap: 10px; margin-top: 10px;
-    justify-content: flex-end;
+  input:focus, textarea:focus {
+    border-color: #00fff7;
+    box-shadow: 0 0 8px #00fff7;
   }
   button {
-    padding: 10px 22px; font-size: 16px; font-weight: 600;
-    border: none; border-radius: 25px; cursor: pointer;
-    transition: background-color 0.3s ease;
+    cursor: pointer;
+    border: none;
+    background-color: #00fff7;
+    color: #111;
+    font-weight: bold;
+    transition: background-color 0.3s;
   }
-  #calcBtn { background:#a5d6a7; color:#176127; }
-  #calcBtn:hover { background:#8fb88f; }
-  #sendBtn { background:#a5d6a7; color:#176127; }
-  #sendBtn:disabled { background:#7bb07b; cursor: default; }
-  #sendBtn:hover:not(:disabled) { background:#81c784; }
-  #resetBtn { background:#d9534f; color:#fff; }
-  #resetBtn:hover { background:#bf3a3a; }
-  #foodInput { display:flex; margin-top:10px; gap:10px; }
-  #foodInput input {
-    flex:1; padding: 8px 12px; border-radius: 25px; border:none;
-    font-size:14px;
+  button:hover {
+    background-color: #00ccc7;
+  }
+  textarea {
+    resize: vertical;
+    min-height: 140px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .col {
+    flex: 1;
+    min-width: 160px;
   }
 </style>
 </head>
 <body>
-<div id="chatbot" role="application" aria-label="Dietician chatbot">
-  <div id="chat" role="log" aria-live="polite" tabindex="0"></div>
-  <div id="inputs">
-    <div><label for="age">Age (years)</label><input type="number" id="age" placeholder="30" min="1" max="120"></div>
-    <div><label for="weight">Weight (kg)</label><input type="number" id="weight" placeholder="70" min="1"></div>
-    <div><label for="height">Height (cm)</label><input type="number" id="height" placeholder="175" min="30"></div>
-    <div><label for="diet">Diet Preference</label><input type="text" id="diet" placeholder="e.g. Vegan, Keto"></div>
-    <div id="buttons">
-      <button id="calcBtn">Calculate BMI & Advice</button>
-      <button id="resetBtn">Restart</button>
+
+<canvas id="backgroundCanvas"></canvas>
+
+<div id="appPanel">
+  <h1>Advanced Dietician App</h1>
+
+  <div>
+    <h2>Profile Information</h2>
+    <div class="row">
+      <div class="col">
+        <label for="age">Age (years)</label>
+        <input type="number" id="age" placeholder="30" />
+      </div>
+      <div class="col">
+        <label for="weight">Weight (kg)</label>
+        <input type="number" id="weight" placeholder="70" />
+      </div>
+      <div class="col">
+        <label for="height">Height (cm)</label>
+        <input type="number" id="height" placeholder="175" />
+      </div>
+      <div class="col" style="flex-grow: 2;">
+        <label for="diet">Diet Preference</label>
+        <input type="text" id="diet" placeholder="e.g. Vegan, Keto" />
+      </div>
     </div>
+    <button id="calcBtn">Calculate BMI & Advice</button>
+    <textarea id="bmiAdvice" readonly placeholder="Your health advice based on profile will appear here."></textarea>
   </div>
-  <div id="foodInput">
-    <input type="text" id="food" placeholder="Enter food name for nutrition info">
-    <button id="sendBtn" disabled>Send</button>
+
+  <div>
+    <h2>Nutrition Lookup</h2>
+    <input type="text" id="foodQuery" placeholder="Enter food name to search" />
+    <button id="searchBtn">Search Nutrition</button>
+    <textarea id="nutritionResult" readonly placeholder="Nutrition data will appear here."></textarea>
   </div>
 </div>
+
 <script>
-  const USDA_API_KEY = 'evbkpkYjm9qBAe6gXrcAgIhhFechn8Tj3Yd4AuIp'; // Replace with your USDA API key
+  // Setup Canvas
+  const canvas = document.getElementById('backgroundCanvas');
+  const ctx = canvas.getContext('2d');
+  let width, height;
 
-  const chat = document.getElementById('chat');
-  const ageInput = document.getElementById('age');
-  const weightInput = document.getElementById('weight');
-  const heightInput = document.getElementById('height');
-  const dietInput = document.getElementById('diet');
-  const calcBtn = document.getElementById('calcBtn');
-  const resetBtn = document.getElementById('resetBtn');
-  const foodInput = document.getElementById('food');
-  const sendBtn = document.getElementById('sendBtn');
+  function resize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+  }
+  resize();
+  window.addEventListener('resize', () => {
+    resize();
+    initializeDots();
+  });
 
-  function addMessage(text, isBot = true) {
-    const div = document.createElement('div');
-    div.className = 'msg ' + (isBot ? 'bot' : 'user');
-    div.textContent = text;
-    chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
+  class Dot {
+    constructor(x, y) {
+      this.x = x;
+      this.y = y;
+      this.radius = 3;
+      this.vx = (Math.random() - 0.5) * 0.5;
+      this.vy = (Math.random() - 0.5) * 0.5;
+    }
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+      if (this.x < this.radius || this.x > width - this.radius) this.vx *= -1;
+      if (this.y < this.radius || this.y > height - this.radius) this.vy *= -1;
+    }
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,255,255,0.8)';
+      ctx.fill();
+    }
   }
 
+  let dots = [];
+  const gap = 120;
+  const maxDistance = 130;
+
+  function initializeDots() {
+    dots = [];
+    for (let x = gap / 2; x < width; x += gap) {
+      for (let y = gap / 2; y < height; y += gap) {
+        dots.push(new Dot(x + (Math.random() * 40 - 20), y + (Math.random() * 40 - 20)));
+      }
+    }
+  }
+  initializeDots();
+
+  function distance(a, b) {
+    return Math.hypot(a.x - b.x, a.y - b.y);
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+
+    dots.forEach((dot, i) => {
+      dot.draw();
+      dot.update();
+      for (let j = i + 1; j < dots.length; j++) {
+        let dist = distance(dot, dots[j]);
+        if (dist < maxDistance) {
+          ctx.strokeStyle = `rgba(0,255,255,${1 - dist / maxDistance})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(dot.x, dot.y);
+          ctx.lineTo(dots[j].x, dots[j].y);
+          ctx.stroke();
+        }
+      }
+    });
+    requestAnimationFrame(animate);
+  }
+  animate();
+
+  // BMI Calculator Logic
   function calculateBMI(weight, height) {
-    const h = height / 100;
+    let h = height / 100;
     return +(weight / (h * h)).toFixed(1);
   }
 
-  function bmiCategory(bmi) {
-    if(bmi < 18.5) return 'Underweight';
-    if(bmi < 25) return 'Normal weight';
-    if(bmi < 30) return 'Overweight';
+  function getBMICategory(bmi) {
+    if (bmi < 18.5) return 'Underweight';
+    if (bmi < 25) return 'Normal weight';
+    if (bmi < 30) return 'Overweight';
     return 'Obese';
   }
 
-  function generateAdvice(bmi, age, diet) {
-    let advice = `Your BMI is ${bmi} (${bmiCategory(bmi)}).\n`;
-    switch(bmiCategory(bmi)){
-      case 'Underweight': advice += "Consider high-calorie and nutrient-rich foods.\n"; break;
-      case 'Normal weight': advice += "Maintain your healthy lifestyle.\n"; break;
-      case 'Overweight': advice += "Reduce caloric intake and increase physical activity.\n"; break;
-      case 'Obese': advice += "Seek medical advice for tailored diet and exercise.\n"; break;
-    }
-    if(diet){
-      advice += `Based on your ${diet} diet, ensure variety and sufficient micronutrients.\n`;
-      if(diet.toLowerCase().includes('vegan')) advice += "Consider supplementing B12 and iron.\n";
-      if(diet.toLowerCase().includes('keto')) advice += "Monitor fat quality and hydration.\n";
-    }
-    if(age) advice += `Age: ${age} years - dietary needs vary.\n`;
-    advice += "Aim to consume a balanced diet with diverse food groups daily.";
-    return advice;
-  }
+  document.getElementById('calcBtn').addEventListener('click', () => {
+    const age = document.getElementById('age').value.trim();
+    const weight = parseFloat(document.getElementById('weight').value);
+    const height = parseFloat(document.getElementById('height').value);
+    const diet = document.getElementById('diet').value.trim();
 
-  async function fetchNutrition(food) {
-    addMessage(`Searching USDA for nutrition info on "${food}"...`);
+    if (!weight || !height || weight <= 0 || height <= 0) {
+      alert('Please enter valid positive values for weight and height.');
+      return;
+    }
+
+    const bmi = calculateBMI(weight, height);
+    const category = getBMICategory(bmi);
+    let advice = `Your BMI is ${bmi} (${category}).\n`;
+    switch(category) {
+      case 'Underweight':
+        advice += 'Consider calorie-rich, nutrient-dense foods.\n';
+        break;
+      case 'Normal weight':
+        advice += 'Maintain a balanced diet and regular exercise.\n';
+        break;
+      case 'Overweight':
+        advice += 'Reduce calorie intake and increase physical activity.\n';
+        break;
+      case 'Obese':
+        advice += 'Seek professional medical advice for weight management.\n';
+        break;
+    }
+    if (diet) {
+      advice += `Diet preference: "${diet}". Make sure to include necessary nutrients.\n`;
+    }
+    if (age) {
+      advice += `Age: ${age}. Nutrient needs vary with age.\n`;
+    }
+    document.getElementById('bmiAdvice').value = advice;
+  });
+
+  // Nutrition Lookup Logic
+  document.getElementById('searchBtn').addEventListener('click', async () => {
+    const food = document.getElementById('foodQuery').value.trim();
+    const output = document.getElementById('nutritionResult');
+    if (!food) {
+      alert('Enter a food name to search.');
+      return;
+    }
+    output.value = 'Loading nutrition info...';
+
     try {
-      const res = await fetch(`https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${USDA_API_KEY}&query=${encodeURIComponent(food)}&pageSize=1`);
-      const data = await res.json();
-      if(!data.foods || !data.foods.length){
-        addMessage(`No nutrition info found for "${food}".`);
+      const apiKey = 'evbkpkYjm9qBAe6gXrcAgIhhFechn8Tj3Yd4AuIp'; // Replace with your USDA API key
+      const response = await fetch(`https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${apiKey}&query=${encodeURIComponent(food)}&pageSize=1`);
+      const data = await response.json();
+      if (!data.foods || data.foods.length === 0) {
+        output.value = 'No nutrition data found.';
         return;
       }
       const item = data.foods[0];
-      const nutrients = {};
+      let nutrients = {};
       item.foodNutrients.forEach(n => {
-        let name = n.nutrientName.toLowerCase();
-        if(name.includes('energy')) nutrients.calories = n.value;
-        else if(name.includes('protein')) nutrients.protein = n.value;
-        else if(name.includes('fat')) nutrients.fat = n.value;
-        else if(name.includes('carbohydrate')) nutrients.carbs = n.value;
+        const name = n.nutrientName.toLowerCase();
+        if (name.includes("energy")) nutrients.Calories = n.value;
+        if (name.includes("protein")) nutrients.Protein = n.value;
+        if (name.includes("fat")) nutrients.Fat = n.value;
+        if (name.includes("carbohydrate")) nutrients.Carbohydrates = n.value;
       });
-      let msg = `${item.description} Nutrition:\n`;
-      if(nutrients.calories) msg += `Calories: ${nutrients.calories} kcal\n`;
-      if(nutrients.protein) msg += `Protein: ${nutrients.protein} g\n`;
-      if(nutrients.fat) msg += `Fat: ${nutrients.fat} g\n`;
-      if(nutrients.carbs) msg += `Carbohydrates: ${nutrients.carbs} g\n`;
-      addMessage(msg);
-    }catch(e){
-      addMessage('Error fetching nutrition info.');
-      console.error(e);
-    }
-  }
-
-  calcBtn.addEventListener('click', () => {
-    const age = parseInt(ageInput.value);
-    const weight = parseFloat(weightInput.value);
-    const height = parseFloat(heightInput.value);
-    const diet = dietInput.value.trim();
-    if(!age || age < 1 || age > 120){
-      alert('Please enter a valid age between 1 and 120.');
-      return;
-    }
-    if(!weight || weight <= 0){
-      alert('Please enter a valid weight.');
-      return;
-    }
-    if(!height || height <= 0){
-      alert('Please enter a valid height.');
-      return;
-    }
-    let bmi = calculateBMI(weight, height);
-    let advice = generateAdvice(bmi, age, diet);
-    addMessage(advice);
-  });
-
-  sendBtn.addEventListener('click', () => {
-    let food = foodInput.value.trim();
-    if(!food) return;
-    addMessage(food, false);
-    fetchNutrition(food);
-    foodInput.value = "";
-  });
-
-  foodInput.addEventListener('keydown', (e) => {
-    if(e.key === 'Enter'){
-      e.preventDefault();
-      if(!sendBtn.disabled) sendBtn.click();
+      let result = `${item.description} (per serving):\n`;
+      for (const [key, val] of Object.entries(nutrients)) {
+        result += `${key}: ${val}\n`;
+      }
+      output.value = result;
+    } catch (e) {
+      output.value = 'Error fetching nutrition data.';
     }
   });
-
-  sendBtn.disabled = true;
-  foodInput.addEventListener('input', () => {
-    sendBtn.disabled = foodInput.value.trim() === "";
-  });
-
-  document.getElementById('resetBtn').addEventListener('click', () => {
-    chat.innerHTML = "";
-    ageInput.value = "";
-    weightInput.value = "";
-    heightInput.value = "";
-    dietInput.value = "";
-    foodInput.value = "";
-    sendBtn.disabled = true;
-    addMessage("Chat restarted. Enter your info and query foods.");
-  });
-
-  window.onload = () => {
-    addMessage("Welcome! Enter your age, weight, height, and diet preference; calculate BMI & advice. Then query foods for nutrition info.");
-  };
 </script>
+
 </body>
 </html>
