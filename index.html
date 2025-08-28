@@ -42,7 +42,36 @@
     document.getElementById("demo-form").submit();
   }
 </script>
-  
+
+  <script>
+    exports.onExecutePostLogin = async (event, api) => {
+  api.multifactor.enable('guardian', { allowRememberBrowser: false });
+};
+  </script>
+
+  <script>
+exports.onExecutePostLogin = async (event, api) => {
+const groups = event.user.app_metadata.authorization.groups;
+const GROUPS_WITH_MFA = {
+// Add groups that need MFA here
+// Example
+admins: true
+};
+
+const needsMFA = !!groups.find(function (group) {
+return GROUPS_WITH_MFA[group];
+});
+
+if (needsMFA) {
+// optional, defaults to true. Set to false to force Guardian authentication every time.
+// See https://auth0.com/docs/secure/multi-factor-authentication/customize-mfa#change-frequency-of-mfa-prompts for details
+api.multifactor.enable('guardian', { allowRememberBrowser: false });
+}
+
+};
+    
+  </script>
+    
 <style>
   /* Your existing CSS unchanged */
   html, body {
