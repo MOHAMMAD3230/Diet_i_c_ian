@@ -2,78 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Advanced Dietician App with Auth0 Admin Integration</title>
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyCbf2_Tix099atneixgZj_h2lIiQ91-TOg",
-    authDomain: "fluted-agency-468912-d7.firebaseapp.com",
-    projectId: "fluted-agency-468912-d7",
-    storageBucket: "fluted-agency-468912-d7.firebasestorage.app",
-    messagingSenderId: "566546517830",
-    appId: "1:566546517830:web:f9d781bcbe610d3b36df47",
-    measurementId: "G-3KL69HPWKR"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
-
-  <!-- Firebase App (the core SDK) -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<!-- Firebase Authentication -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<head>
-  <script src="https://www.google.com/recaptcha/enterprise.js?render=6LeqFLUrAAAAAOdqFseYKrhyENDkl7FKmOWqcykD"></script>
-  <!-- Your code -->
-</head>
-  <!-- Replace the variables below. -->
-<script>
-  function onSubmit(token) {
-    document.getElementById("demo-form").submit();
-  }
-</script>
-
-  <script>
-    exports.onExecutePostLogin = async (event, api) => {
-  api.multifactor.enable('guardian', { allowRememberBrowser: false });
-};
-  </script>
-
-  <script>
-exports.onExecutePostLogin = async (event, api) => {
-const groups = event.user.app_metadata.authorization.groups;
-const GROUPS_WITH_MFA = {
-// Add groups that need MFA here
-// Example
-admins: true
-};
-
-const needsMFA = !!groups.find(function (group) {
-return GROUPS_WITH_MFA[group];
-});
-
-if (needsMFA) {
-// optional, defaults to true. Set to false to force Guardian authentication every time.
-// See https://auth0.com/docs/secure/multi-factor-authentication/customize-mfa#change-frequency-of-mfa-prompts for details
-api.multifactor.enable('guardian', { allowRememberBrowser: false });
-}
-
-};
-    
-  </script>
-    
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Advanced Dietician App with Admin Login</title>
 <style>
-  /* Your existing CSS unchanged */
+  /* Your existing styles */
   html, body {
     margin: 0; padding: 0;
     width: 100%; min-height: 100vh;
@@ -233,48 +165,28 @@ api.multifactor.enable('guardian', { allowRememberBrowser: false });
   </div>
   <pre id="dosOutput"></pre>
 </div>
-<script src="https://cdn.auth0.com/js/auth0-spa-js/1.26/auth0-spa-js.production.js"></script>
 <script>
-  let auth0 = null;
   let isAdmin = false;
 
-  async function initAuth0() {
-    auth0 = await createAuth0Client({
-      domain: "<dev-sqxaaq5amj4faxzm.us.auth0.com>",
-      client_id: "<ThQA3ppjE67XCdG1Xv1mE9sv4CnqJbkf>",
-      cacheLocation: 'localstorage'
-    });
-
-    if(window.location.search.includes('code=') && window.location.search.includes('state=')){
-      await auth0.handleRedirectCallback();
-      window.history.replaceState({}, document.title, "/");
-    }
-
-    const isAuthenticated = await auth0.isAuthenticated();
-
-    if(!isAuthenticated){
-      await auth0.loginWithRedirect({
-        redirect_uri: window.location.origin
-      });
+  window.onload = function(){
+    const pwd = prompt("Enter admin password (leave blank if not admin):");
+    if(pwd === "chickenBiryani"){ // change this password to your desired admin password
+      isAdmin = true;
+      alert("Admin mode enabled");
     } else {
-      const user = await auth0.getUser();
-      // Check custom roles claim, e.g. https://your-app.com/roles
-      const roles = user['https://your-app.com/roles'] || [];
-      isAdmin = roles.includes('admin');
-
-      toggleAdminFeatures();
-      console.log('Authenticated user:', user);
+      alert("Logged in as regular user");
     }
-  }
+    toggleAdminFeatures();
+  };
 
-  function toggleAdminFeatures() {
+  function toggleAdminFeatures(){
     const adminButtons = [
       'printBmiBtn','saveBmiBtn','emailBmiBtn',
       'printNutritionBtn','saveNutritionBtn','emailNutritionBtn',
       'printDosBtn','saveDosBtn','emailDosBtn'
     ];
-    adminButtons.forEach(id => {
-      const btn = document.getElementById(id);
+    adminButtons.forEach(id=>{
+      const btn=document.getElementById(id);
       if(btn){
         btn.style.display = isAdmin ? 'inline-block' : 'none';
         btn.disabled = !isAdmin;
@@ -283,7 +195,7 @@ api.multifactor.enable('guardian', { allowRememberBrowser: false });
   }
 
   function saveTextFile(filename, text){
-    const blob = new Blob([text], { type:'text/plain' });
+    const blob = new Blob([text], {type:'text/plain'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = filename;
@@ -325,7 +237,118 @@ api.multifactor.enable('guardian', { allowRememberBrowser: false });
     });
   });
 
-  // BMI calculation & display
+  function calculateBMI(weight, height){
+    const h = height / 100;
+    return +(weight / (h*h)).toFixed(1);
+  }
+
+  function getBmiCategory(bmi){
+    if(bmi < 16.5) return "Severely Underweight";
+    if(bmi < 18.5) return "Underweight";
+    if(bmi < 25) return "Normal weight";
+    if(bmi < 30) return "Overweight";
+    if(bmi < 35) return "Obesity Class I";
+    if(bmi < 40) return "Obesity Class II";
+    return "Obesity Class III";
+  }
+
+  function generateDetailedAdvice(weight, height, bmi, category, age, diet, goal){
+    let advice = `=== BMI Calculation & Health Advice ===\n\n`;
+    advice += `Step 1: Convert height from cm to meters:\n  ${height} cm = ${(height / 100).toFixed(2)} m\n\n`;
+    advice += `Step 2: Square the height in meters:\n  ${(height / 100).toFixed(2)} × ${(height / 100).toFixed(2)} = ${(height / 100 * height / 100).toFixed(4)} m²\n\n`;
+    advice += `Step 3: Calculate BMI:\n  ${weight} ÷ ${(height / 100 * height / 100).toFixed(4)} = ${bmi}\n\n`;
+    advice += `BMI Classification: ${category}\n\n`;
+    switch(category){
+      case "Severely Underweight":
+        advice += "- Severe underweight risks: malnutrition, fractures, immunity issues.\n- Increase calorie and nutrient intake.\n";
+        break;
+      case "Underweight":
+        advice += "- Underweight risks: nutrient deficiencies, fatigue.\n- Eat calorie-dense foods and frequent meals.\n";
+        break;
+      case "Normal weight":
+        advice += "- Normal weight: maintain balanced diet and exercise.\n";
+        break;
+      case "Overweight":
+        advice += "- Overweight: risk of chronic diseases.\n- Moderate calorie restriction and more activity recommended.\n";
+        break;
+      case "Obesity Class I":
+      case "Obesity Class II":
+      case "Obesity Class III":
+        advice += "- Obesity risks: cardiovascular and metabolic diseases.\n- Seek professional help for sustainable management.\n";
+        break;
+    }
+    advice += `\nWeight Goal: ${goal}\n`;
+    if(goal === "Lose")
+      advice += "- Moderate calorie deficit, hydration, exercise.\n";
+    else if(goal === "Gain")
+      advice += "- Increase calories with nutritious foods.\n";
+    else
+      advice += "- Balance intake and activity.\n";
+    advice += `\nAdditional Tips:\n- Sleep 7-9 hours.\n- Manage stress.\n- Stay socially connected.\n- Limit alcohol and processed foods.\n`;
+    if(diet && diet.toLowerCase() !== "none")
+      advice += `\nDiet Preference: Adapt your ${diet} diet for nutrition.\n`;
+    advice += "\nConsult healthcare professionals for personalized advice.\n";
+    return advice;
+  }
+
+  function generateGuide(goal, bmiCat, diet){
+    const dos = [
+      "Eat colorful fruits & vegetables daily.",
+      "Choose whole grains over refined grains.",
+      "Include lean and plant-based proteins.",
+      "Stay hydrated with water.",
+      "Aim for 7-9 hours quality sleep nightly.",
+      "Practice mindfulness or yoga to relieve stress.",
+      "Engage in 150 mins moderate exercise weekly.",
+      "Maintain social connections."
+    ];
+    const donts = [
+      "Avoid sugary drinks and processed snacks.",
+      "Limit saturated and trans fats.",
+      "Don't skip meals.",
+      "Limit alcohol and avoid tobacco use.",
+      "Avoid sedentary lifestyle.",
+      "Pay attention to mental health."
+    ];
+    if(goal === "Lose"){
+      dos.unshift("Create a moderate calorie deficit.");
+      dos.unshift("Include cardio and strength training.");
+      donts.unshift("Avoid binge and late-night snacking.");
+    } else if(goal === "Gain"){
+      dos.unshift("Eat more nutrient-dense calories.");
+      dos.unshift("Eat frequent balanced meals.");
+      donts.unshift("Avoid empty calories.");
+    } else{
+      dos.unshift("Balance calorie intake with activity.");
+      dos.unshift("Regularly monitor your weight.");
+      donts.unshift("Avoid overeating.");
+    }
+    if(["Severely Underweight", "Underweight"].includes(bmiCat)){
+      dos.push("Focus on calorie-rich nutrient foods.");
+      donts.push("Avoid skipping meals.");
+    }
+    if(["Overweight", "Obesity Class I", "Obesity Class II", "Obesity Class III"].includes(bmiCat)){
+      dos.push("Seek professional weight management.");
+      donts.push("Avoid fad diets.");
+    }
+    if(diet && diet.toLowerCase() !== "none"){
+      dos.push(`Adjust diet (${diet}) for nutrition completeness.`);
+    }
+    const wellnessTips = [
+      "Use breathing exercises or yoga for stress relief.",
+      "Maintain regular sleep schedule.",
+      "Take breaks to prevent burnout.",
+      "Stay socially connected.",
+      "Limit caffeine late in the day."
+    ];
+    let output = "=== Personalized Do's & Don'ts & Wellness Tips ===\n\nDo's:\n"+dos.map((d,i)=>`${i+1}. ${d}`).join("\n");
+    output += "\n\nDon'ts:\n"+donts.map((d,i)=>`${i+1}. ${d}`).join("\n");
+    output += "\n\nMental & Wellness Tips:\n"+wellnessTips.map((d,i)=>`${i+1}. ${d}`).join("\n");
+    return output;
+  }
+
+  // Event handlers for buttons
+
   document.getElementById('calcBtn').addEventListener('click', () => {
     const age = document.getElementById('age').value.trim();
     const weight = parseFloat(document.getElementById('weight').value);
@@ -336,14 +359,12 @@ api.multifactor.enable('guardian', { allowRememberBrowser: false });
       alert('Please enter valid weight and height');
       return;
     }
-    const bmi = weight / ((height/100) * (height/100));
+    const bmi = calculateBMI(weight, height);
     const category = getBmiCategory(bmi);
     const advice = generateDetailedAdvice(weight, height, bmi, category, age, diet, "General");
-
     document.getElementById('bmiAdvice').value = advice;
   });
 
-  // Nutrition lookup
   document.getElementById('searchBtn').addEventListener('click', async () => {
     const food = document.getElementById('foodQuery').value.trim();
     const output = document.getElementById('nutritionResult');
@@ -352,8 +373,8 @@ api.multifactor.enable('guardian', { allowRememberBrowser: false });
       return;
     }
     output.value = 'Loading nutrition info...';
-    try {
-      const apiKey = '<evbkpkYjm9qBAe6gXrcAgIhhFechn8Tj3Yd4AuIp>'; // Replace with your USDA API key
+    try{
+      const apiKey = 'evbkpkYjm9qBAe6gXrcAgIhhFechn8Tj3Yd4AuIp'; // Replace with your USDA API key
       const response = await fetch(`https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${apiKey}&query=${encodeURIComponent(food)}&pageSize=1`);
       const data = await response.json();
       if(!data.foods || data.foods.length === 0){
@@ -363,23 +384,22 @@ api.multifactor.enable('guardian', { allowRememberBrowser: false });
       const item = data.foods[0];
       let nutrients = {};
       item.foodNutrients.forEach(n=>{
-        let nName = n.nutrientName.toLowerCase();
-        if(nName.includes('energy')) nutrients.Calories = n.value;
-        if(nName.includes('protein')) nutrients.Protein = n.value;
-        if(nName.includes('fat')) nutrients.Fat = n.value;
-        if(nName.includes('carbohydrate')) nutrients.Carbohydrates = n.value;
+        const name = n.nutrientName.toLowerCase();
+        if(name.includes('energy')) nutrients.Calories = n.value;
+        if(name.includes('protein')) nutrients.Protein = n.value;
+        if(name.includes('fat')) nutrients.Fat = n.value;
+        if(name.includes('carbohydrate')) nutrients.Carbohydrates = n.value;
       });
-      let result = `${item.description} (per serving):\n`;
-      for(const [key,val] of Object.entries(nutrients)){
-        result += `${key}: ${val}\n`;
+      let results = `${item.description} (per serving):\n`;
+      for(const [k,v] of Object.entries(nutrients)){
+        results += `${k}: ${v}\n`;
       }
-      output.value = result;
-    } catch(e){
+      output.value = results;
+    }catch(e){
       output.value = 'Error fetching nutrition data.';
     }
   });
 
-  // Do's & Don'ts generation
   document.getElementById('showDosBtn').addEventListener('click', () => {
     const goal = document.getElementById('goalSelect').value;
     const weight = parseFloat(document.getElementById('weight').value);
@@ -394,43 +414,12 @@ api.multifactor.enable('guardian', { allowRememberBrowser: false });
       alert('Please enter valid weight and height');
       return;
     }
-
-    const bmi = weight / ((height/100) * (height/100));
-    const category = getBmiCategory(bmi);
-    const guide = generateGuide(goal, category, diet);
+    const bmi = calculateBMI(weight, height);
+    const cat = getBmiCategory(bmi);
+    const guide = generateGuide(goal, cat, diet);
     document.getElementById('dosOutput').textContent = guide;
   });
 
-  function getBmiCategory(bmi){
-    if(bmi < 16.5) return "Severely Underweight";
-    if(bmi < 18.5) return "Underweight";
-    if(bmi < 25) return "Normal weight";
-    if(bmi < 30) return "Overweight";
-    if(bmi < 35) return "Obesity Class I";
-    if(bmi < 40) return "Obesity Class II";
-    return "Obesity Class III";
-  }
-
-  function generateDetailedAdvice(weight, height, bmi, category, age, diet, goal){
-    let advice = `=== BMI Calculation & Health Advice ===\n\n`;
-    advice += `Step 1: Convert height from cm to meters:\n  ${height} cm = ${(height/100).toFixed(2)} m\n\n`;
-    advice += `Step 2: Square the height in meters:\n  ${(height/100).toFixed(2)} × ${(height/100).toFixed(2)} = ${(height/100 * height/100).toFixed(4)} m²\n\n`;
-    advice += `Step 3: Calculate BMI:\n  ${weight} ÷ ${(height/100*height/100).toFixed(4)} = ${bmi.toFixed(1)}\n\n`;
-    advice += `BMI Category: ${category}\n\n`;
-    // Add category specific advice, wellness tips etc.
-    // Simplified here for brevity
-    advice += `Weight Goal: ${goal}\n`;
-    advice += `Diet Preference: ${diet}\n\nMaintain a balanced diet and regular exercise.\n`;
-    advice += `\nConsult healthcare professionals for personalized advice.\n`;
-    return advice;
-  }
-
-  function generateGuide(goal,bmiCat,diet){
-    // Generate actionable do's & don'ts text here (omitted for brevity, use previous implementations)
-    return "Personalized Do's & Don'ts based on goal, BMI and diet.";
-  }
-
-  // Admin export controls blocked for non-admin users
   function checkAdmin(){
     if(!isAdmin){
       alert("Only admins can perform this action.");
@@ -438,116 +427,48 @@ api.multifactor.enable('guardian', { allowRememberBrowser: false });
     }
     return true;
   }
-  // Export events:
-  ['Bmi','Nutrition','Dos'].forEach(section=>{
-    const printBtn=document.getElementById('print'+section+'Btn');
-    if(printBtn) printBtn.addEventListener('click', () => {
-      if(!checkAdmin()) return;
-      printContent(section.toLowerCase()+'Output' in document ? section.toLowerCase()+'Output' : section.toLowerCase()+'Advice');
-    });
-    const saveBtn=document.getElementById('save'+section+'Btn');
-    if(saveBtn) saveBtn.addEventListener('click', () => {
-      if(!checkAdmin()) return;
-      const id = section.toLowerCase()+'Output' in document ? section.toLowerCase()+'Output' : section.toLowerCase()+'Advice';
-      const el=document.getElementById(id);
-      const text= el.value || el.textContent;
-      saveTextFile(section.toLowerCase()+'_data.txt', text);
-    });
-    const emailBtn=document.getElementById('email'+section+'Btn');
-    if(emailBtn) emailBtn.addEventListener('click', () => {
-      if(!checkAdmin()) return;
-      const id = section.toLowerCase()+'Output' in document ? section.toLowerCase()+'Output' : section.toLowerCase()+'Advice';
-      const el=document.getElementById(id);
-      const text= el.value || el.textContent;
-      sendEmail(section+' Data', text);
-    });
+
+  // Attach export buttons events to admin only
+
+  document.getElementById('printBmiBtn').addEventListener('click', () => {
+    if(!checkAdmin()) return;
+    printContent('bmiAdvice');
+  });
+  document.getElementById('saveBmiBtn').addEventListener('click', () => {
+    if(!checkAdmin()) return;
+    saveTextFile('bmi_advice.txt', document.getElementById('bmiAdvice').value);
+  });
+  document.getElementById('emailBmiBtn').addEventListener('click', () => {
+    if(!checkAdmin()) return;
+    sendEmail('BMI Advice', document.getElementById('bmiAdvice').value);
+  });
+
+  document.getElementById('printNutritionBtn').addEventListener('click', () => {
+    if(!checkAdmin()) return;
+    printContent('nutritionResult');
+  });
+  document.getElementById('saveNutritionBtn').addEventListener('click', () => {
+    if(!checkAdmin()) return;
+    saveTextFile('nutrition_data.txt', document.getElementById('nutritionResult').value);
+  });
+  document.getElementById('emailNutritionBtn').addEventListener('click', () => {
+    if(!checkAdmin()) return;
+    sendEmail('Nutrition Data', document.getElementById('nutritionResult').value);
+  });
+
+  document.getElementById('printDosBtn').addEventListener('click', () => {
+    if(!checkAdmin()) return;
+    printContent('dosOutput');
+  });
+  document.getElementById('saveDosBtn').addEventListener('click', () => {
+    if(!checkAdmin()) return;
+    saveTextFile('dos_and_donts.txt', document.getElementById('dosOutput').textContent);
+  });
+  document.getElementById('emailDosBtn').addEventListener('click', () => {
+    if(!checkAdmin()) return;
+    sendEmail('Dos and Donts', document.getElementById('dosOutput').textContent);
   });
 
 </script>
-  <script>import com.google.cloud.recaptchaenterprise.v1.RecaptchaEnterpriseServiceClient;
-import com.google.recaptchaenterprise.v1.Assessment;
-import com.google.recaptchaenterprise.v1.CreateAssessmentRequest;
-import com.google.recaptchaenterprise.v1.Event;
-import com.google.recaptchaenterprise.v1.ProjectName;
-import com.google.recaptchaenterprise.v1.RiskAnalysis.ClassificationReason;
-import java.io.IOException;
-
-public class CreateAssessment {
-
-  public static void main(String[] args) throws IOException {
-    // TO-DO: Replace the token and reCAPTCHA action variables before running the sample.
-    String projectID = "fluted-agency-468912-d7";
-    String recaptchaKey = "6LeqFLUrAAAAAOdqFseYKrhyENDkl7FKmOWqcykD";
-    String token = "action-token";
-    String recaptchaAction = "action-name";
-
-    createAssessment(projectID, recaptchaKey, token, recaptchaAction);
-  }
-
-  /**
-   * Create an assessment to analyse the risk of a UI action.
-   *
-   * @param projectID : Your Google Cloud project ID.
-   * @param recaptchaKey : The reCAPTCHA key associated with the site/app
-   * @param token : The generated token obtained from the client.
-   * @param recaptchaAction : Action name corresponding to the token.
-   */
-  public static void createAssessment(
-      String projectID, String recaptchaKey, String token, String recaptchaAction)
-      throws IOException {
-    // Create the reCAPTCHA client.
-    // TODO: Cache the client generation code (recommended) or call client.close() before exiting the method.
-    try (RecaptchaEnterpriseServiceClient client = RecaptchaEnterpriseServiceClient.create()) {
-
-      // Set the properties of the event to be tracked.
-      Event event = Event.newBuilder().setSiteKey(recaptchaKey).setToken(token).build();
-
-      // Build the assessment request.
-      CreateAssessmentRequest createAssessmentRequest =
-          CreateAssessmentRequest.newBuilder()
-              .setParent(ProjectName.of(projectID).toString())
-              .setAssessment(Assessment.newBuilder().setEvent(event).build())
-              .build();
-
-      Assessment response = client.createAssessment(createAssessmentRequest);
-
-      // Check if the token is valid.
-      if (!response.getTokenProperties().getValid()) {
-        System.out.println(
-            "The CreateAssessment call failed because the token was: "
-                + response.getTokenProperties().getInvalidReason().name());
-        return;
-      }
-
-      // Check if the expected action was executed.
-      if (!response.getTokenProperties().getAction().equals(recaptchaAction)) {
-        System.out.println(
-            "The action attribute in reCAPTCHA tag is: "
-                + response.getTokenProperties().getAction());
-        System.out.println(
-            "The action attribute in the reCAPTCHA tag "
-                + "does not match the action ("
-                + recaptchaAction
-                + ") you are expecting to score");
-        return;
-      }
-
-      // Get the risk score and the reason(s).
-      // For more information on interpreting the assessment, see:
-      // https://developers.google.com/recaptcha-enterprise/docs/interpret-assessment
-      for (ClassificationReason reason : response.getRiskAnalysis().getReasonsList()) {
-        System.out.println(reason);
-      }
-
-      float recaptchaScore = response.getRiskAnalysis().getScore();
-      System.out.println("The reCAPTCHA score is: " + recaptchaScore);
-
-      // Get the assessment name (ID). Use this to annotate the assessment.
-      String assessmentName = response.getName();
-      System.out.println(
-          "Assessment name: " + assessmentName.substring(assessmentName.lastIndexOf("/") + 1));
-    }
-  }
-}</script>
 </body>
 </html>
