@@ -41,12 +41,7 @@
   function onSubmit(token) {
     document.getElementById("demo-form").submit();
   }
-</script><button class="g-recaptcha"
-    data-sitekey="6LeqFLUrAAAAAOdqFseYKrhyENDkl7FKmOWqcykD"
-    data-callback='onSubmit'
-    data-action='submit'>
-  Submit
-</button>
+</script>
   
 <style>
   /* Your existing CSS unchanged */
@@ -440,7 +435,7 @@
   });
 
 </script>
-  <aplet>import com.google.cloud.recaptchaenterprise.v1.RecaptchaEnterpriseServiceClient;
+  <script>import com.google.cloud.recaptchaenterprise.v1.RecaptchaEnterpriseServiceClient;
 import com.google.recaptchaenterprise.v1.Assessment;
 import com.google.recaptchaenterprise.v1.CreateAssessmentRequest;
 import com.google.recaptchaenterprise.v1.Event;
@@ -524,6 +519,11 @@ public class CreateAssessment {
           "Assessment name: " + assessmentName.substring(assessmentName.lastIndexOf("/") + 1));
     }
   }
-}</aplet>
+}</script><br><button class="g-recaptcha"
+    data-sitekey="6LeqFLUrAAAAAOdqFseYKrhyENDkl7FKmOWqcykD"
+    data-callback='onSubmit'
+    data-action='submit'>
+  Submit
+</button>
 </body>
 </html>
