@@ -260,7 +260,7 @@
     if (typeof s !== "string") return "";
     return s.replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
   }
-  function sanitizeInput(str) { return (typeof str === "string") ? str.replace(/<[^>]*>/g, "").trim() : ""; }
+  function sanitizeInput(str) { return (typeof str === "string") ? str.replace(/[<>]/g, "").trim() : ""; }
   function isValidUsername(n) { return /^[A-Za-z0-9 .\-_']{2,30}$/.test(n); }
   function notify(msg) {
     try { alert(msg); } catch (e) {}
