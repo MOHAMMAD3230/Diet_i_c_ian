@@ -236,7 +236,12 @@
     const el = document.getElementById(id);
     const content = el.value || el.textContent;
     const w = window.open();
-    w.document.write('<pre style="font-family: monospace; white-space: pre-wrap; font-size: 16px;">' + content + '</pre>');
+    const pre = w.document.createElement('pre');
+    pre.style.fontFamily = 'monospace';
+    pre.style.whiteSpace = 'pre-wrap';
+    pre.style.fontSize = '16px';
+    pre.textContent = content;
+    w.document.body.appendChild(pre);
     w.document.close();
     w.focus();
     w.print();
